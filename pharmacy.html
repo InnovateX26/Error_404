@@ -248,24 +248,27 @@
                 tbody.innerHTML = '<tr><td colspan="4" class="px-10 py-20 text-center text-slate-400 font-bold uppercase text-[10px]">No active delivery requests</td></tr>';
             } else {
                 orders.forEach(o => {
-                    let statusColor = o.status === 'Pending' ? 'amber' : o.status === 'Delivered' ? 'emerald' : 'blue';
-                    let source = o.patientName ? `${o.patientName} <br><span class="text-xs text-slate-400">${o.phone}</span>` : 'Hospital Hub';
+                    let statusColor = o.status === 'Pending' ? 'amber' : (o.status === 'Delivered' || o.status === 'Approved') ? 'emerald' : (o.status === 'Declined' || o.status === 'Rejected') ? 'rose' : 'blue';
+                    let source = o.patientName ? `${o.patientName} <br><span class="text-xs text-slate-400 font-bold">${o.phone}</span>` : 'Hospital Hub';
                     
                     tbody.innerHTML += `
-                        <tr class="group">
-                            <td class="px-10 py-6 text-slate-800">${source}</td>
+                        <tr class="group hover:bg-slate-50 transition-all">
+                            <td class="px-10 py-6 text-slate-800 font-black">${o.id}<br><span class="text-[10px] text-slate-400 uppercase tracking-widest">${source}</span></td>
                             <td class="px-10 py-6">
-                                <span class="bg-${statusColor}-50 text-${statusColor}-600 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">${o.status}</span>
-                                <p class="text-[10px] font-bold text-slate-400 mt-1 uppercase">${o.medName} x ${o.qty}</p>
+                                <span class="bg-${statusColor}-50 text-${statusColor}-600 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-${statusColor}-100">${o.status}</span>
+                                <p class="text-[10px] font-black text-slate-500 mt-2 uppercase tracking-tight">${o.medName} (Qty: ${o.qty})</p>
                             </td>
-                            <td class="px-10 py-6 font-black text-slate-400">${o.time}</td>
-                            <td class="px-10 py-6 text-right space-x-2">
-                                ${o.status !== 'Delivered' && o.status !== 'Declined' ? `
-                                    <button onclick="updateOrderStatus('${o.id}', 'Processing')" class="text-blue-500 hover:bg-blue-50 p-2 rounded-xl transition" title="Process"><i class="fas fa-flask-vial"></i></button>
-                                    <button onclick="updateOrderStatus('${o.id}', 'Out for Delivery')" class="text-indigo-500 hover:bg-indigo-50 p-2 rounded-xl transition" title="Dispatch"><i class="fas fa-truck"></i></button>
-                                    <button onclick="updateOrderStatus('${o.id}', 'Delivered')" class="text-emerald-500 hover:bg-emerald-50 p-2 rounded-xl transition" title="Complete"><i class="fas fa-check-double"></i></button>
-                                    <button onclick="updateOrderStatus('${o.id}', 'Declined')" class="text-rose-400 hover:bg-rose-50 p-2 rounded-xl transition" title="Cancel"><i class="fas fa-ban"></i></button>
-                                ` : `<span class="italic text-slate-300 text-xs">${o.status === 'Delivered' ? 'Archive Ready' : 'Cancelled'}</span>`}
+                            <td class="px-10 py-6 font-black text-slate-400 text-xs">${o.time}</td>
+                            <td class="px-10 py-6 text-center">
+                                <div class="flex items-center justify-center gap-2">
+                                ${o.status === 'Pending' || o.status === 'Processing' ? `
+                                    <button onclick="updateOrderStatus('${o.id}', 'Processing')" class="bg-blue-50 text-blue-600 p-3 rounded-xl transition hover:bg-blue-600 hover:text-white" title="Start Processing"><i class="fas fa-flask"></i></button>
+                                    <button onclick="updateOrderStatus('${o.id}', 'Approved')" class="bg-emerald-50 text-emerald-600 p-3 rounded-xl transition hover:bg-emerald-600 hover:text-white" title="Mark Approved/Packed"><i class="fas fa-box"></i></button>
+                                    <button onclick="updateOrderStatus('${o.id}', 'Declined')" class="bg-rose-50 text-rose-600 p-3 rounded-xl transition hover:bg-rose-600 hover:text-white" title="Decline Order"><i class="fas fa-times"></i></button>
+                                ` : `
+                                    <span class="text-[10px] font-black text-slate-300 uppercase italic">Request Handled</span>
+                                `}
+                                </div>
                             </td>
                         </tr>
                     `;
@@ -289,9 +292,10 @@
                     localStorage.setItem('safescript_patient_orders', JSON.stringify(patientOrders));
                 }
                 
-                // If special hospital order, sync back to hospital.html if needed
+                // If it was a hospital restock request (HREQ-...) code handle here if needed
+                
                 loadOrders();
-                alert(`Order ID ${id} is now ${newStatus}`);
+                alert(`Order ID ${id} Status Updated to: ${newStatus}`);
             }
         }
 
