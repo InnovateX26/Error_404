@@ -68,9 +68,9 @@
                     <p class="text-slate-500">Real-time fraud detection & policy verification</p>
                 </div>
                 <div class="flex gap-3">
-                    <button class="px-5 py-2.5 border border-slate-200 bg-white rounded-lg text-sm font-semibold hover:bg-slate-50">Sync Data</button>
-                    <button onclick="switchTab('pending')" class="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold shadow-lg shadow-blue-200">Start Review</button>
-                </div>
+                <button onclick="downloadInsuranceData()" class="px-5 py-2.5 border border-slate-200 bg-white rounded-lg text-sm font-semibold hover:bg-slate-50"><i class="fas fa-file-pdf mr-2"></i> Download Overall Data</button>
+                <button onclick="switchTab('pending')" class="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold shadow-lg shadow-blue-200">View Active Audits</button>
+            </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -266,16 +266,21 @@
         }
 
         function loadPending() {
-            // Simulated pending claims based on Pharmacy/Hospital bills if any, else dummy
             const container = document.getElementById('pending-list');
             const bills = JSON.parse(localStorage.getItem('h_bills')) || [];
             const pharma = JSON.parse(localStorage.getItem('safescript_pharma_logs')) || [];
             
-            // Filter only those NOT in insurance_history
             const history = JSON.parse(localStorage.getItem('safescript_insurance_history')) || [];
             const processedIds = history.map(h => h.id);
 
-            let allPotentials = [...bills.map(b => ({...b, source: 'Hospital Care'})), ...pharma.map(p => ({...p, source: 'LifeCare Pharma'}))];
+            let demoData = [
+                { id: 'DEMO-101', patient: 'Ayush Kumar', amount: '12500', source: 'City General Hospital' },
+                { id: 'DEMO-102', patient: 'Rohan Sharma', amount: '4200', source: 'LifeCare Pharma' },
+                { id: 'DEMO-103', patient: 'Sita Ram', amount: '8900', source: 'Apollo Medics' },
+                { id: 'DEMO-104', patient: 'Priya Verma', amount: '1500', source: 'Jan Aushadhi Store' }
+            ];
+
+            let allPotentials = [...demoData, ...bills.map(b => ({...b, source: 'Hospital Care'})), ...pharma.map(p => ({...p, source: 'LifeCare Pharma'}))];
             let active = allPotentials.filter(p => !processedIds.includes(p.id));
 
             if(active.length === 0) {
@@ -284,23 +289,41 @@
             }
 
             container.innerHTML = active.map(a => `
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 transition-all hover:shadow-md">
                     <div class="flex justify-between items-start mb-4">
                         <div>
                             <h4 class="font-black text-slate-800">${a.patient}</h4>
                             <p class="text-[10px] font-bold text-blue-500 uppercase tracking-widest">${a.source}</p>
                         </div>
-                        <span class="text-sm font-black text-slate-900">₹${a.amount}</span>
+                        <span class="text-sm font-black text-slate-900 italic">₹${a.amount}</span>
                     </div>
                     <div class="space-y-1 mb-4">
-                         <p class="text-[10px] text-slate-400 font-bold"><i class="fas fa-fingerprint mr-1"></i> ID: ${a.id}</p>
-                         <p class="text-[10px] text-slate-400 font-bold"><i class="fas fa-location-dot mr-1"></i> Area: New Delhi Hub</p>
+                         <p class="text-[10px] text-slate-400 font-bold"><i class="fas fa-fingerprint mr-1"></i> Insurance ID: SS-INS-${a.id.split('-').pop()}</p>
+                         <p class="text-[10px] text-slate-400 font-bold"><i class="fas fa-location-dot mr-1"></i> Location: Patna Sector 4</p>
                     </div>
                     <button onclick="openAudit('${a.id}', '${a.patient}', '${a.amount}', '${a.source}')" class="w-full bg-slate-900 text-white py-3 rounded-2xl font-bold text-sm shadow-xl hover:bg-blue-600 transition-all flex items-center justify-center gap-2">
-                        <i class="fas fa-magnifying-glass-chart"></i> Audit Claim
+                        <i class="fas fa-magnifying-glass-chart"></i> Verify & Audit
                     </button>
                 </div>
             `).join('');
+        }
+
+        function downloadInsuranceData() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const history = JSON.parse(localStorage.getItem('safescript_insurance_history')) || [];
+            
+            doc.setFontSize(22); doc.text("Insurance Audit Master Report", 20, 20);
+            doc.setFontSize(10); doc.text(`Generated Date: ${new Date().toLocaleString()}`, 20, 30);
+            
+            let data = history.map(h => [h.id, h.patient, h.source, h.verdict, "Rs. " + h.amt]);
+            doc.autoTable({
+                startY: 40,
+                head: [['ID', 'Customer', 'Provider', 'Status', 'Claim Amount']],
+                body: data.length > 0 ? data : [['N/A', 'No data', '-', '-', '-']]
+            });
+            doc.save("SafeScript_Insurance_Master_Registry.pdf");
+            alert("Overall data registry downloaded as PDF.");
         }
 
         function openAudit(id, name, amt, source) {
