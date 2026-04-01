@@ -400,17 +400,21 @@
             <div class="mb-32"></div>
         </div>
 
-        <!-- Status Board Tab -->
-        <div id="status" class="tab-content space-y-6 hidden">
-            <h2 class="text-3xl font-black text-slate-800">My Status Board</h2>
-            <p class="text-xs font-bold text-slate-400 uppercase tracking-widest -mt-4">Live Tracking of Bookings & Orders</p>
-            <div id="status-container" class="medical-card p-8 border-2 border-slate-100 bg-white/40">
-                <!-- Data populated by JS (loadStatusBoard) -->
-            </div>
-        </div>
-
     </main>
 
+    <nav class="fixed bottom-8 left-4 right-4 h-20 medical-card flex justify-between items-center px-4 border border-white/50 shadow-[0_20px_50px_rgba(0,0,0,0.1)] z-40 rounded-3xl">
+        <button onclick="switchTab('home')" class="nav-link active flex flex-col items-center group w-12 cursor-pointer">
+            <i class="fas fa-house-user text-xl"></i>
+            <span class="text-[8px] font-bold mt-1 opacity-100 text-slate-600 transition-opacity">Home</span>
+        </button>
+        <button onclick="switchTab('reports'); startScanning();" class="nav-link flex flex-col items-center group w-12 cursor-pointer">
+            <i class="fas fa-qrcode text-xl"></i>
+            <span class="text-[8px] font-bold mt-1 opacity-100 text-slate-600 transition-opacity">Scan</span>
+        </button>
+        <button onclick="switchTab('profile')" class="nav-link flex flex-col items-center group w-12 cursor-pointer">
+            <i class="fas fa-user-circle text-xl"></i>
+            <span class="text-[8px] font-bold mt-1 opacity-100 text-slate-600 transition-opacity">Profile</span>
+        </button>
         <button onclick="switchTab('bookappt')" class="nav-link flex flex-col items-center group w-12 cursor-pointer">
             <i class="fas fa-calendar-alt text-xl"></i>
             <span class="text-[8px] font-bold mt-1 opacity-100 text-slate-600 transition-opacity">Book</span>
