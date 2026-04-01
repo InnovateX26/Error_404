@@ -23,168 +23,357 @@
         
         <nav class="flex-1 space-y-2">
             <div class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Main Menu</div>
-            <a href="#" class="flex items-center gap-3 bg-blue-600 text-white p-3 rounded-lg transition">
-                <i class="fa-solid fa-gauge-high"></i> Integrity Overview
-            </a>
-            <a href="#" class="flex items-center gap-3 hover:bg-slate-800 p-3 rounded-lg transition">
-                <i class="fa-solid fa-file-invoice-dollar"></i> Pending Claims
-            </a>
-            <a href="#" class="flex items-center gap-3 hover:bg-slate-800 p-3 rounded-lg transition">
-                <i class="fa-solid fa-user-secret"></i> Fraud Investigation
-            </a>
-            <a href="#" class="flex items-center gap-3 hover:bg-slate-800 p-3 rounded-lg transition">
-                <i class="fa-solid fa-hospital-user"></i> Provider Ratings
-            </a>
-            <a href="#" onclick="logout()" class="flex items-center gap-3 hover:bg-slate-800 hover:text-red-400 p-3 rounded-lg transition">
-                <i class="fa-solid fa-right-from-bracket"></i> Logout
-            </a>
+            <button onclick="switchTab('overview')" class="nav-item w-full flex items-center gap-3 bg-blue-600 text-white p-3 rounded-lg transition">
+                <i class="fa-solid fa-gauge-high w-5 text-center"></i> Integrity Overview
+            </button>
+            <button onclick="switchTab('pending')" class="nav-item w-full flex items-center gap-3 hover:bg-slate-800 p-3 rounded-lg transition">
+                <i class="fa-solid fa-file-invoice-dollar w-5 text-center"></i> Pending Claims
+            </button>
+            <button onclick="switchTab('ratings')" class="nav-item w-full flex items-center gap-3 hover:bg-slate-800 p-3 rounded-lg transition">
+                <i class="fa-solid fa-hospital-user w-5 text-center"></i> Provider Ratings
+            </button>
+            <button onclick="switchTab('profile')" class="nav-item w-full flex items-center gap-3 hover:bg-slate-800 p-3 rounded-lg transition">
+                <i class="fa-solid fa-id-card w-5 text-center"></i> Admin Profile
+            </button>
+            <button onclick="logout()" class="w-full flex items-center gap-3 hover:bg-slate-800 hover:text-red-400 p-3 rounded-lg transition mt-10">
+                <i class="fa-solid fa-right-from-bracket w-5 text-center"></i> Logout
+            </button>
         </nav>
 
-        <div class="bg-slate-800 p-4 rounded-xl mt-auto border border-slate-700">
-            <p class="text-xs text-slate-400">System Health</p>
-            <p class="text-sm font-semibold text-green-400">AI Engine: Online</p>
+        <div class="p-4 border-t border-slate-800 pt-6 mt-auto">
+            <div class="flex items-center gap-3 bg-slate-800/50 p-3 rounded-xl cursor-pointer hover:bg-slate-800 transition" onclick="switchTab('profile')">
+                <img id="sidebar-dp" src="" class="w-8 h-8 rounded-full hidden object-cover">
+                <div id="sidebar-icon" class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-xs">S</div>
+                <div>
+                    <p id="sidebar-name" class="text-xs font-bold text-white">Insurance Admin</p>
+                    <p class="text-[10px] text-slate-500">Integrity Officer</p>
+                </div>
+            </div>
         </div>
     </aside>
 
+    <style>
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        #audit-modal { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(5px); z-index: 100; align-items: center; justify-content: center; }
+    </style>
+
     <main class="flex-1 p-8">
         
-        <div class="flex justify-between items-center mb-10">
-            <div>
-                <h2 class="text-2xl font-bold text-slate-800">Claims Integrity Analysis</h2>
-                <p class="text-slate-500">Real-time fraud detection & policy verification</p>
+        <div id="overview" class="tab-content active">
+            <div class="flex justify-between items-center mb-10">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800">Claims Integrity Analysis</h2>
+                    <p class="text-slate-500">Real-time fraud detection & policy verification</p>
+                </div>
+                <div class="flex gap-3">
+                    <button class="px-5 py-2.5 border border-slate-200 bg-white rounded-lg text-sm font-semibold hover:bg-slate-50">Sync Data</button>
+                    <button onclick="switchTab('pending')" class="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold shadow-lg shadow-blue-200">Start Review</button>
+                </div>
             </div>
-            <div class="flex gap-3">
-                <button class="px-5 py-2.5 border border-slate-200 bg-white rounded-lg text-sm font-semibold hover:bg-slate-50">Download Report</button>
-                <button class="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold shadow-lg shadow-blue-200">New Audit Case</button>
-            </div>
-        </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                <p class="text-slate-500 text-sm mb-1">Total Claims (24h)</p>
-                <div class="text-2xl font-bold text-slate-900">1,284</div>
-                <div class="mt-2 text-xs text-green-500 font-bold"><i class="fa-solid fa-arrow-up"></i> 4.2% vs yesterday</div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <p class="text-slate-500 text-sm mb-1">Approved Claims Total</p>
+                    <div id="stat-approved-sum" class="text-2xl font-bold text-slate-900">₹0</div>
+                    <div class="mt-2 text-xs text-green-500 font-bold"><i class="fa-solid fa-check"></i> Verified Transactions</div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <p class="text-slate-500 text-sm mb-1">Flagged for Fraud / Rejected</p>
+                    <div id="stat-fraud-sum" class="text-2xl font-bold text-red-600">₹0</div>
+                    <div class="mt-2 text-xs text-red-500 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> Risks Prevented</div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <p class="text-slate-500 text-sm mb-1">Total Cases Handled</p>
+                    <div id="stat-total-count" class="text-2xl font-bold text-blue-600">0</div>
+                    <div class="mt-2 text-xs text-slate-400 font-medium">All-time audit volume</div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <p class="text-slate-500 text-sm mb-1">System Trust Avg</p>
+                    <div id="stat-trust-avg" class="text-2xl font-bold text-emerald-600">92%</div>
+                    <div class="mt-2 text-xs text-emerald-400 font-medium">AI Network Confidence</div>
+                </div>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                <p class="text-slate-500 text-sm mb-1">Flagged for Fraud</p>
-                <div class="text-2xl font-bold text-red-600">42</div>
-                <div class="mt-2 text-xs text-red-400 font-bold">High Risk Detected</div>
-            </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                <p class="text-slate-500 text-sm mb-1">Auto-Approved</p>
-                <div class="text-2xl font-bold text-green-600">89%</div>
-                <div class="mt-2 text-xs text-slate-400 font-medium">Fast-track processing</div>
-            </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                <p class="text-slate-500 text-sm mb-1">Revenue Saved</p>
-                <div class="text-2xl font-bold text-blue-600">₹12.4L</div>
-                <div class="mt-2 text-xs text-blue-400 font-medium">FWA prevention</div>
-            </div>
-        </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-            
-            <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                <div class="p-6 border-b border-slate-50 flex justify-between items-center">
-                    <h3 class="font-bold text-slate-800 uppercase text-xs tracking-wider">Claims Requiring Manual Review</h3>
-                    <span class="bg-red-50 text-red-600 px-3 py-1 rounded-full text-xs font-bold">Action Required</span>
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                <div class="p-6 border-b border-slate-50">
+                    <h3 class="font-bold text-slate-800 uppercase text-xs tracking-wider">Processed Claim History (Audit Log)</h3>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
-                        <thead class="bg-slate-50">
-                            <tr class="text-slate-400 text-[10px] uppercase font-bold tracking-widest">
-                                <th class="px-6 py-4">Claim ID</th>
-                                <th class="px-6 py-4">Issue Detected</th>
-                                <th class="px-6 py-4 text-center">Trust Score</th>
-                                <th class="px-6 py-4 text-right">Amount</th>
-                                <th class="px-6 py-4"></th>
-                            </tr>
+                        <thead class="bg-slate-50 text-[10px] uppercase font-bold text-slate-400">
+                            <tr><th class="px-6 py-4">Claim ID</th><th class="px-6 py-4">Applicant Detail</th><th class="px-6 py-4">Final Verdict</th><th class="px-6 py-4 text-right">Amount</th></tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-100">
-                            <tr class="hover:bg-slate-50/50 transition cursor-pointer">
-                                <td class="px-6 py-4 font-semibold text-slate-700 text-sm">#CLM-8902</td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-2">
-                                        <span class="w-2 h-2 rounded-full bg-red-500"></span>
-                                        <span class="text-xs text-red-600 font-bold">Potential Upcoding</span>
-                                    </div>
-                                    <p class="text-[10px] text-slate-400">Brand name requested over generic</p>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex flex-col items-center gap-1">
-                                        <span class="text-sm font-bold text-orange-500">0.52</span>
-                                        <div class="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                            <div class="h-full bg-orange-500" style="width: 52%"></div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 text-right text-sm font-bold text-slate-700">₹8,450</td>
-                                <td class="px-6 py-4 text-right">
-                                    <button class="text-blue-600 hover:text-blue-800 text-xs font-bold uppercase tracking-tighter">Audit Now</button>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-slate-50/50 transition cursor-pointer">
-                                <td class="px-6 py-4 font-semibold text-slate-700 text-sm">#CLM-8941</td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-2">
-                                        <span class="w-2 h-2 rounded-full bg-orange-500"></span>
-                                        <span class="text-xs text-orange-600 font-bold">Duplicate (14d)</span>
-                                    </div>
-                                    <p class="text-[10px] text-slate-400">Claimed at Patna Pharmacy & Online</p>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex flex-col items-center gap-1">
-                                        <span class="text-sm font-bold text-red-600">0.34</span>
-                                        <div class="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                            <div class="h-full bg-red-600" style="width: 34%"></div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 text-right text-sm font-bold text-slate-700">₹1,200</td>
-                                <td class="px-6 py-4 text-right">
-                                    <button class="text-blue-600 hover:text-blue-800 text-xs font-bold uppercase tracking-tighter">Audit Now</button>
-                                </td>
-                            </tr>
+                        <tbody id="history-list" class="divide-y divide-slate-100 italic text-slate-400 text-sm">
+                            <tr><td colspan="4" class="px-6 py-10 text-center">No audit history available yet.</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
+        </div>
 
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col justify-between">
-                <div>
-                    <h3 class="font-bold text-slate-800 text-sm mb-1">Integrity Distribution</h3>
-                    <p class="text-xs text-slate-400 mb-6">Claim trust scores across network</p>
-                </div>
-                
-                <div class="relative h-48 flex items-center justify-center">
-                    <div class="absolute inset-0 flex flex-col items-center justify-center">
-                        <span class="text-4xl font-extrabold text-green-500">0.88</span>
-                        <span class="text-xs font-bold text-slate-400 uppercase">Avg Trust</span>
-                    </div>
-                    <svg class="w-40 h-40 transform -rotate-90">
-                        <circle cx="80" cy="80" r="70" stroke="currentColor" stroke-width="8" fill="transparent" class="text-slate-100" />
-                        <circle cx="80" cy="80" r="70" stroke="currentColor" stroke-width="8" fill="transparent" stroke-dasharray="440" stroke-dashoffset="52" class="text-green-500" />
-                    </svg>
-                </div>
+        <div id="pending" class="tab-content">
+            <h2 class="text-2xl font-bold text-slate-800 mb-6">Pending Audit Queue</h2>
+            <div id="pending-list" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Populated by JS -->
+            </div>
+        </div>
 
-                <div class="space-y-3 mt-6">
-                    <div class="flex justify-between text-xs">
-                        <span class="text-slate-500">High Risk (< 0.4)</span>
-                        <span class="font-bold text-red-500">12</span>
+        <div id="ratings" class="tab-content">
+            <h2 class="text-2xl font-bold text-slate-800 mb-6">Provider Ratings & Trust Scores</h2>
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50 text-[10px] uppercase font-bold text-slate-400">
+                        <tr><th class="px-6 py-4">Hospital / Pharmacy</th><th class="px-6 py-4">Location</th><th class="px-6 py-4">Avg Provider Rating</th><th class="px-6 py-4 text-right">Trust Percentage</th></tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 font-semibold text-sm">
+                        <tr>
+                            <td class="px-6 py-4 text-slate-800">City General Hospital</td>
+                            <td class="px-6 py-4 text-slate-500">New Delhi</td>
+                            <td class="px-6 py-4">
+                                <span class="text-amber-400"><i class="fas fa-star"></i> 4.8</span>
+                            </td>
+                            <td class="px-6 py-4 text-right"><span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs">98% Secure</span></td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 text-slate-800">LifeCare Pharmacy Ltd</td>
+                            <td class="px-6 py-4 text-slate-500">Bangalore</td>
+                            <td class="px-6 py-4">
+                                <span class="text-amber-400"><i class="fas fa-star"></i> 4.5</span>
+                            </td>
+                            <td class="px-6 py-4 text-right"><span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs">94% Secure</span></td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 text-slate-800">Apollo Medics</td>
+                            <td class="px-6 py-4 text-slate-500">Mumbai</td>
+                            <td class="px-6 py-4">
+                                <span class="text-amber-400"><i class="fas fa-star"></i> 4.2</span>
+                            </td>
+                            <td class="px-6 py-4 text-right"><span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs">88% Secure</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="profile" class="tab-content max-w-2xl mx-auto">
+            <div class="bg-white rounded-[2rem] shadow-xl border border-slate-100 p-10">
+                <h3 class="text-2xl font-bold text-slate-800 mb-8 flex items-center gap-3"><i class="fas fa-id-card-clip text-blue-600"></i> Admin Registry</h3>
+                <div class="text-center mb-8">
+                    <div class="relative w-28 h-28 mx-auto mb-4">
+                        <img id="prof-dp" src="" class="w-28 h-28 bg-slate-100 rounded-3xl object-cover shadow-sm hidden border-4 border-white">
+                        <div id="prof-dp-placeholder" class="w-28 h-28 bg-blue-50 text-blue-600 flex items-center justify-center rounded-3xl text-3xl font-bold shadow-sm">S</div>
+                        <label class="absolute -right-2 -bottom-2 w-10 h-10 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-400 shadow-md cursor-pointer hover:text-blue-600 transition">
+                            <i class="fas fa-camera"></i>
+                            <input type="file" onchange="uploadDP(event)" class="hidden" accept="image/*">
+                        </label>
                     </div>
-                    <div class="flex justify-between text-xs">
-                        <span class="text-slate-500">Medium Risk (0.4-0.7)</span>
-                        <span class="font-bold text-orange-500">84</span>
+                </div>
+                <div class="space-y-4">
+                    <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase ml-3 tracking-widest">Administrator Name</label><input type="text" id="prof-name" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 outline-none focus:border-blue-400 transition-all"></div>
+                    <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase ml-3 tracking-widest">Officer Email</label><input type="text" id="prof-email" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 outline-none focus:border-blue-400 transition-all"></div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase ml-3 tracking-widest">Phone (Restricted)</label><input type="text" id="prof-phone" readonly class="w-full p-4 bg-slate-100 border-0 rounded-2xl text-sm font-bold text-slate-400 cursor-not-allowed"></div>
+                        <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase ml-3 tracking-widest">Registry ID</label><input type="text" id="prof-id" readonly class="w-full p-4 bg-slate-100 border-0 rounded-2xl text-sm font-bold text-slate-400 cursor-not-allowed"></div>
                     </div>
-                    <div class="flex justify-between text-xs">
-                        <span class="text-slate-500">Low Risk (> 0.7)</span>
-                        <span class="font-bold text-green-500">1,188</span>
-                    </div>
+                    <button onclick="saveProfile()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-xl hover:bg-slate-900 transition-all mt-4">Update Registry</button>
                 </div>
             </div>
-
         </div>
+
     </main>
+
+    <!-- Audit Modal -->
+    <div id="audit-modal">
+        <div class="bg-white w-full max-w-lg p-8 rounded-[2.5rem] shadow-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-slate-800">Claim Fraud Audit</h3>
+                <button onclick="closeAudit()" class="text-slate-300 hover:text-red-500"><i class="fas fa-circle-xmark text-2xl"></i></button>
+            </div>
+            <div class="space-y-5">
+                <div class="p-4 bg-blue-50 rounded-2xl border border-blue-100">
+                    <p id="audit-info" class="text-xs font-semibold text-blue-700 leading-relaxed"></p>
+                </div>
+                <div class="space-y-3">
+                    <p class="text-[10px] font-black uppercase text-slate-400 tracking-widest px-2">Integrity Checklist</p>
+                    <label class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl cursor-not-allowed opacity-80"><input type="checkbox" checked disabled class="accent-blue-600"> <span class="text-sm font-bold text-slate-600">Digital Signature Validated</span></label>
+                    <label class="flex items-center gap-3 p-3 hover:bg-slate-50 rounded-xl cursor-pointer"><input type="checkbox" id="q2" class="accent-blue-600"> <span class="text-sm font-bold text-slate-600">Physician Diagnosis Matches Claims</span></label>
+                    <label class="flex items-center gap-3 p-3 hover:bg-slate-50 rounded-xl cursor-pointer"><input type="checkbox" id="q3" class="accent-blue-600"> <span class="text-sm font-bold text-slate-600">No Double-Billing Detected in Network</span></label>
+                    <label class="flex items-center gap-3 p-3 hover:bg-slate-50 rounded-xl cursor-pointer"><input type="checkbox" id="q4" class="accent-blue-600"> <span class="text-sm font-bold text-slate-600">Provider Credentials Verified Online</span></label>
+                    <label class="flex items-center gap-3 p-3 hover:bg-slate-50 rounded-xl cursor-pointer"><input type="checkbox" id="q5" class="accent-blue-600"> <span class="text-sm font-bold text-slate-600">Claimed Amount within Policy Limit</span></label>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mt-6">
+                    <button onclick="verdict('Approved')" class="bg-emerald-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-emerald-100 hover:bg-emerald-700 transition-all">Approve Claim</button>
+                    <button onclick="verdict('Fraud')" class="bg-rose-100 text-rose-600 py-4 rounded-2xl font-bold hover:bg-rose-600 hover:text-white transition-all">Flag as Fraud</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentAuditId = null;
+        let currentUser = null;
+
+        function switchTab(id) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('bg-blue-600', 'text-white'));
+            event.currentTarget.classList.add('bg-blue-600', 'text-white');
+            if(id === 'pending') loadPending();
+            if(id === 'overview') loadHistory();
+        }
+
+        function loadProfile() {
+            currentUser = JSON.parse(localStorage.getItem('safescript_user'));
+            if(currentUser) {
+                document.getElementById('prof-name').value = currentUser.fullName || currentUser.institution || "Insurance Admin";
+                document.getElementById('prof-email').value = currentUser.email || "admin@safescript.ai";
+                document.getElementById('prof-phone').value = currentUser.phone || "+91 9876543210";
+                document.getElementById('prof-id').value = currentUser.idVal || "INS-PRT-092";
+                document.getElementById('sidebar-name').innerText = (currentUser.fullName || currentUser.institution || "Insurer").split(' ')[0];
+                if(currentUser.dp) {
+                    document.getElementById('prof-dp').src = currentUser.dp;
+                    document.getElementById('prof-dp').classList.remove('hidden');
+                    document.getElementById('prof-dp-placeholder').classList.add('hidden');
+                    document.getElementById('sidebar-dp').src = currentUser.dp;
+                    document.getElementById('sidebar-dp').classList.remove('hidden');
+                    document.getElementById('sidebar-icon').classList.add('hidden');
+                }
+            }
+        }
+
+        function uploadDP(event) {
+            const file = event.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    let data = e.target.result;
+                    currentUser.dp = data;
+                    localStorage.setItem('safescript_user', JSON.stringify(currentUser));
+                    loadProfile();
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function saveProfile() {
+            currentUser.fullName = document.getElementById('prof-name').value;
+            currentUser.email = document.getElementById('prof-email').value;
+            localStorage.setItem('safescript_user', JSON.stringify(currentUser));
+            loadProfile();
+            alert("Registry Updated Success!");
+        }
+
+        function loadPending() {
+            // Simulated pending claims based on Pharmacy/Hospital bills if any, else dummy
+            const container = document.getElementById('pending-list');
+            const bills = JSON.parse(localStorage.getItem('h_bills')) || [];
+            const pharma = JSON.parse(localStorage.getItem('safescript_pharma_logs')) || [];
+            
+            // Filter only those NOT in insurance_history
+            const history = JSON.parse(localStorage.getItem('safescript_insurance_history')) || [];
+            const processedIds = history.map(h => h.id);
+
+            let allPotentials = [...bills.map(b => ({...b, source: 'Hospital Care'})), ...pharma.map(p => ({...p, source: 'LifeCare Pharma'}))];
+            let active = allPotentials.filter(p => !processedIds.includes(p.id));
+
+            if(active.length === 0) {
+                container.innerHTML = `<div class="col-span-2 py-20 text-center bg-white rounded-3xl border border-slate-100 text-slate-400 font-bold uppercase text-xs tracking-widest">No pending claims found in network.</div>`;
+                return;
+            }
+
+            container.innerHTML = active.map(a => `
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h4 class="font-black text-slate-800">${a.patient}</h4>
+                            <p class="text-[10px] font-bold text-blue-500 uppercase tracking-widest">${a.source}</p>
+                        </div>
+                        <span class="text-sm font-black text-slate-900">₹${a.amount}</span>
+                    </div>
+                    <div class="space-y-1 mb-4">
+                         <p class="text-[10px] text-slate-400 font-bold"><i class="fas fa-fingerprint mr-1"></i> ID: ${a.id}</p>
+                         <p class="text-[10px] text-slate-400 font-bold"><i class="fas fa-location-dot mr-1"></i> Area: New Delhi Hub</p>
+                    </div>
+                    <button onclick="openAudit('${a.id}', '${a.patient}', '${a.amount}', '${a.source}')" class="w-full bg-slate-900 text-white py-3 rounded-2xl font-bold text-sm shadow-xl hover:bg-blue-600 transition-all flex items-center justify-center gap-2">
+                        <i class="fas fa-magnifying-glass-chart"></i> Audit Claim
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function openAudit(id, name, amt, source) {
+            currentAuditId = { id, name, amt, source };
+            document.getElementById('audit-info').innerText = `Auditing claim #${id} for ${name} from ${source}. Requested Amount: Rs. ${amt}`;
+            document.getElementById('audit-modal').style.display = 'flex';
+        }
+
+        function closeAudit() { document.getElementById('audit-modal').style.display = 'none'; }
+
+        function verdict(type) {
+            // Require check
+            if(!document.getElementById('q2').checked || !document.getElementById('q3').checked) {
+                if(!confirm("Warning: Checklist incomplete. Proceed with high-risk manual override?")) return;
+            }
+
+            let history = JSON.parse(localStorage.getItem('safescript_insurance_history')) || [];
+            history.unshift({ ...currentAuditId, verdict: type, timestamp: new Date().toLocaleString() });
+            localStorage.setItem('safescript_insurance_history', JSON.stringify(history));
+
+            closeAudit();
+            loadPending();
+            loadHistory();
+            alert(`Claim #${currentAuditId.id} Verdict: ${type}`);
+        }
+
+        function loadHistory() {
+            const list = document.getElementById('history-list');
+            const history = JSON.parse(localStorage.getItem('safescript_insurance_history')) || [];
+            
+            let appSum = 0, fraudSum = 0, trustCount = 0;
+            
+            if(history.length === 0) {
+                list.innerHTML = `<tr><td colspan="4" class="px-6 py-10 text-center">No audit history available yet.</td></tr>`;
+            } else {
+                list.innerHTML = history.slice(0, 10).map(h => {
+                    const isApp = h.verdict === 'Approved';
+                    if(isApp) appSum += parseFloat(h.amt);
+                    else fraudSum += parseFloat(h.amt);
+                    
+                    return `
+                    <tr class="hover:bg-slate-50 transition cursor-default">
+                        <td class="px-6 py-4 font-bold text-slate-700 text-xs">#${h.id}</td>
+                        <td class="px-6 py-4 font-semibold text-slate-600 text-xs">${h.name}<br><span class="text-[9px] text-slate-400 font-bold uppercase">${h.source}</span></td>
+                        <td class="px-6 py-4"><span class="px-2 py-1 rounded-full text-[9px] font-black uppercase ${isApp ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}">${h.verdict}</span></td>
+                        <td class="px-6 py-4 text-right text-xs font-black text-slate-800">₹${h.amt}</td>
+                    </tr>`;
+                }).join('');
+            }
+
+            // Sync Stats
+            document.getElementById('stat-approved-sum').innerText = '₹' + appSum.toLocaleString();
+            document.getElementById('stat-fraud-sum').innerText = '₹' + fraudSum.toLocaleString();
+            document.getElementById('stat-total-count').innerText = history.length;
+            
+            // Fake Trust calc logic based on fraud ratio
+            let trust = history.length === 0 ? 98 : Math.round(100 - (fraudSum / (appSum + fraudSum || 1) * 100));
+            document.getElementById('stat-trust-avg').innerText = trust + '%';
+        }
+
+        function logout() {
+            if (confirm("Are you sure you want to logout? (Yes/No)")) {
+                window.location.href = "login.html";
+            }
+        }
+
+        window.onload = function() {
+            loadProfile();
+            loadHistory();
+        }
+    </script>
+</body>
+</html>
 
     <script>
         function logout() {

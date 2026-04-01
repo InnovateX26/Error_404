@@ -1,4 +1,4 @@
-$port = 8002
+$port = 8010
 $listener = New-Object System.Net.HttpListener
 $listener.Prefixes.Add("http://localhost:$port/")
 try {
