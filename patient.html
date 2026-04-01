@@ -1064,7 +1064,8 @@
         }
 
         function bookAppointment() {
-            const type = document.getElementById('apptType').value;
+            const typeInput = document.getElementById('apptType').value;
+            const type = (typeInput === 'Hospital OPD') ? 'Hospital OPD' : typeInput;
             const name = document.getElementById('apptName').value;
             const age = document.getElementById('apptAge').value;
             const phone = document.getElementById('apptPhone').value;
