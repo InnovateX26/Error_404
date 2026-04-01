@@ -1017,7 +1017,19 @@
         }
 
         function triggerSOS() {
-            let sosData = { id: "SOS-" + Date.now(), status: "Pending", time: new Date().toLocaleTimeString(), lat: 0, lon: 0 };
+            let u = JSON.parse(localStorage.getItem('safescript_user'));
+            let name = u ? u.fullName : "Emergency Patient";
+            let phone = u ? u.phone : "Unknown";
+            
+            let sosData = { 
+                id: "SOS-" + Date.now(), 
+                patientName: name,
+                phone: phone,
+                status: "Pending", 
+                time: new Date().toLocaleTimeString(), 
+                lat: 0, 
+                lon: 0 
+            };
             
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(position => {
@@ -1025,18 +1037,29 @@
                     sosData.lon = position.coords.longitude;
                     localStorage.setItem('safescript_sos', JSON.stringify(sosData));
                     
+                    // Also push to a shared queue for hospital
+                    let queue = JSON.parse(localStorage.getItem('safescript_sos_queue')) || [];
+                    queue.push(sosData);
+                    localStorage.setItem('safescript_sos_queue', JSON.stringify(queue));
+                    
                     speak("Hospital ke paas aapki data chali gayi hai. Ab hospital ko approve karne dijiye. Emergency alert sent!");
-                    SafeScript.speak("Hospital ke paas aapki data chali gayi hai. Ab hospital ko approve karne dijiye. Ambulance is being dispatch request sent.", "hi-IN");
-                    alert(`🚨 EMERGENCY BOOKED!\nStatus: PENDING Confirmation from Hospital.\nLat ${sosData.lat.toFixed(4)}, Lon ${sosData.lon.toFixed(4)}`);
+                    SafeScript.speak("Emergency request sent to hospital. Waiting for ambulance dispatch.", "hi-IN");
+                    alert(`🚨 SOS ALERT SENT!\nPatient: ${name}\nStatus: WAITING for Hospital Dispatch.\nLocation: ${sosData.lat.toFixed(4)}, ${sosData.lon.toFixed(4)}`);
                 }, err => {
                     localStorage.setItem('safescript_sos', JSON.stringify(sosData));
-                    speak("Emergency alert sent to your doctor, but GPS could not be found.");
-                    alert("🚨 EMERGENCY: Help is requested but GPS failed! Status: PENDING.");
+                    let queue = JSON.parse(localStorage.getItem('safescript_sos_queue')) || [];
+                    queue.push(sosData);
+                    localStorage.setItem('safescript_sos_queue', JSON.stringify(queue));
+                    speak("Emergency alert sent to hospital, but GPS could not be found.");
+                    alert("🚨 EMERGENCY: Help requested but GPS failed! Status: PENDING.");
                 });
             } else {
                 localStorage.setItem('safescript_sos', JSON.stringify(sosData));
-                speak("Emergency alert sent to your doctor and hospital.");
-                alert("🚨 EMERGENCY: Help is requested! Status: PENDING.");
+                let queue = JSON.parse(localStorage.getItem('safescript_sos_queue')) || [];
+                queue.push(sosData);
+                localStorage.setItem('safescript_sos_queue', JSON.stringify(queue));
+                speak("Emergency alert sent to hospital.");
+                alert("🚨 EMERGENCY: Request sent! Status: PENDING.");
             }
         }
 
